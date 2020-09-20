@@ -28,7 +28,7 @@ var mouse_pos = Vector2()
 var path_display = []
 var reached_end = false
 var player_pos = Vector2()
-func _draw():
+func _draw(): 
 	for cell_info in visited_data_for_display:
 		var cell_pos = tilemap.map_to_world(Vector2(cell_info.pos.x, cell_info.pos.y)) + Vector2(8, 8)
 		if reached_end:
@@ -40,10 +40,10 @@ func _draw():
 			
 		if cell_info.last_pos != null:
 			var last_cell_pos = tilemap.map_to_world(Vector2(cell_info.last_pos.x, cell_info.last_pos.y)) + Vector2(8, 8)
-			#if reached_end:
-				#draw_line(cell_pos, last_cell_pos, Color.lightgreen, 2)
-			#else:
-				#draw_line(cell_pos, last_cell_pos, Color.green, 2)
+			if reached_end:
+				draw_line(cell_pos, last_cell_pos, Color.lightgreen, 2)
+			else:
+				draw_line(cell_pos, last_cell_pos, Color.green, 2)
 	draw_circle(tilemap.map_to_world(Vector2(mouse_pos.x, mouse_pos.y)) + Vector2(8, 8), 5, Color.yellow)
 	var last_cell_pos = null
 	if len(path_display) > 0:
@@ -52,7 +52,7 @@ func _draw():
 #	t_path.invert()
 	for cell in path_display:
 		var cell_pos = tilemap.map_to_world(Vector2(cell.x, cell.y)) + Vector2(8, 8)
-		#draw_rect(Rect2(cell_pos - Vector2(8, 8), Vector2(16,16)), Color.blue)
+		draw_rect(Rect2(cell_pos - Vector2(8, 8), Vector2(16,16)), Color.blue)
 		draw_line(cell_pos, last_cell_pos, Color.blue, 2)
 		last_cell_pos = cell_pos
 
@@ -97,7 +97,7 @@ func get_path_bfs(start_pos, goal_pos):
 		update() #tab for real time processing visualization
 	var backtraced_path = []
 	var cur_pos = goal_pos
-	while false:#str(cur_pos) in visited and visited[str(cur_pos)] != null: #draw blue line
+	while str(cur_pos) in visited and visited[str(cur_pos)] != null: #draw blue line
 		yield(get_tree().create_timer(PATH_DISPLAY_RATE), "timeout")
 		update()
 		if cur_pos != null:
