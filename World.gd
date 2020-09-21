@@ -2,8 +2,7 @@ extends Node2D
 
 onready var tilemap = $TileMap
 onready var player = $Player
-onready var step_count_limit = 3
-
+onready var step_count_limit = 5
 
 
 func _ready():
@@ -17,12 +16,13 @@ func _process(delta):
 		mouse_pos = global_position_to_tilemap_pos(get_global_mouse_position())
 		player_pos = global_position_to_tilemap_pos(player.global_position)
 		path = []
-		path = yield(get_path_bfs(player_pos, mouse_pos), "completed")
+		path = yield(get_path_bfs(player_pos, mouse_pos, step_counter), "completed")
 		#path = get_path_bfs(player_pos, mouse_pos)
 		update()
 	if Input.is_action_just_pressed("exit"):
 		get_tree().quit()
 
+var step_counter = 0
 var path = []
 var mouse_pos = Vector2()
 var path_display = []
@@ -66,7 +66,7 @@ func can_move_to_spot(cell_pos):
 	var step_count = abs(cell_pos.x - player_pos.x) + abs(cell_pos.y - player_pos.y)
 	#gay += 1
 	#print(gay)
-	return (tilemap.get_cell(cell_pos.x, cell_pos.y) < 0) and (step_count <= step_count_limit)
+	return (tilemap.get_cell(cell_pos.x, cell_pos.y) < 0)# and (step_count <= step_count_limit)
 
 const DISPLAY_RATE = 0.01
 const PATH_DISPLAY_RATE = 0.1
@@ -74,8 +74,8 @@ const MAX_ITERS = 10000
 var queue = []
 var visited = {}
 var visited_data_for_display = []
-func get_path_bfs(start_pos, goal_pos):
-	queue = [{"pos": start_pos, "last_pos": null}]
+func get_path_bfs(start_pos, goal_pos, step_counter):
+	queue = [{"pos": start_pos, "last_pos": null, "step_counter": step_counter}]
 	visited = {}
 	visited_data_for_display = []
 	path_display = []
@@ -85,9 +85,10 @@ func get_path_bfs(start_pos, goal_pos):
 		yield(get_tree().create_timer(DISPLAY_RATE), "timeout") # I don't understand yield but this is required
 		return []
 	var iters = 0
-	while queue.size() > 0:
+	while queue.size() > 0:#and current_step_count <= 4:
+		#current_step_count +=1
 		var cell_info = queue.pop_front()
-		if check_cell(cell_info.pos, cell_info.last_pos, goal_pos):
+		if check_cell(cell_info.pos, cell_info.last_pos, goal_pos, cell_info.step_counter):
 			reached_end = true
 			#break
 		iters += 1
@@ -97,6 +98,7 @@ func get_path_bfs(start_pos, goal_pos):
 		update() #tab for real time processing visualization
 	var backtraced_path = []
 	var cur_pos = goal_pos
+	var step_counter1 = step_counter
 	while str(cur_pos) in visited and visited[str(cur_pos)] != null: #draw blue line
 		yield(get_tree().create_timer(PATH_DISPLAY_RATE), "timeout")
 		update()
@@ -108,19 +110,24 @@ func get_path_bfs(start_pos, goal_pos):
 	backtraced_path.invert()
 	return backtraced_path
 
-func check_cell(cur_pos, last_pos, goal_pos):
+func check_cell(cur_pos, last_pos, goal_pos,step_counter1):
 	if !can_move_to_spot(cur_pos):
 		return false
 	if str(cur_pos) in visited:
 		return false
+	print (step_counter1)
+	
 	
 	visited[str(cur_pos)] = last_pos
-	visited_data_for_display.append({"pos": cur_pos, "last_pos": last_pos})
+	visited_data_for_display.append({"pos": cur_pos, "last_pos": last_pos,"step_counter": step_counter1})
 	#if cur_pos.x == goal_pos.x and cur_pos.y == goal_pos.y: 
 		#return true
+	if step_counter1 == step_count_limit:
+		return true
 	
-	queue.push_back({"pos": {"x": cur_pos.x, "y": cur_pos.y + 1}, "last_pos": cur_pos})
-	queue.push_back({"pos": {"x": cur_pos.x + 1, "y": cur_pos.y}, "last_pos": cur_pos})
-	queue.push_back({"pos": {"x": cur_pos.x, "y": cur_pos.y - 1}, "last_pos": cur_pos})
-	queue.push_back({"pos": {"x": cur_pos.x - 1, "y": cur_pos.y}, "last_pos": cur_pos})
-	return false
+	queue.push_back({"pos": {"x": cur_pos.x, "y": cur_pos.y + 1}, "last_pos": cur_pos, "step_counter": step_counter1 + 1})
+	queue.push_back({"pos": {"x": cur_pos.x + 1, "y": cur_pos.y}, "last_pos": cur_pos, "step_counter": step_counter1 + 1})
+	queue.push_back({"pos": {"x": cur_pos.x, "y": cur_pos.y - 1}, "last_pos": cur_pos, "step_counter": step_counter1 + 1})
+	queue.push_back({"pos": {"x": cur_pos.x - 1, "y": cur_pos.y}, "last_pos": cur_pos, "step_counter": step_counter1 + 1})
+	
+	
