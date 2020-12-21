@@ -2,7 +2,7 @@ extends Node2D
 
 onready var tilemap = $TileMap
 onready var player = $Player
-onready var step_count_limit = 5
+onready var step_count_limit = 10
 
 
 func _ready():
@@ -120,7 +120,7 @@ func check_cell(cur_pos, last_pos, goal_pos,step_counter1):
 	
 	visited[str(cur_pos)] = last_pos
 	visited_data_for_display.append({"pos": cur_pos, "last_pos": last_pos,"step_counter": step_counter1})
-	#if cur_pos.x == goal_pos.x and cur_pos.y == goal_pos.y: 
+	#if cur_pos.x == goal_pos.x and cur_pos.y == goal_pos.y: #stops checking tiles once it checks goal tile
 		#return true
 	if step_counter1 == step_count_limit:
 		return true
